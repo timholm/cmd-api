@@ -1,0 +1,28 @@
+# Apply this to create the ArgoCD application
+# kubectl apply -f lenovo-services/templates/argocd-app.yaml
+#
+# Or apply via ArgoCD CLI:
+# argocd app create lenovo-services --repo https://github.com/timholm/cmd-api.git --path lenovo-services --dest-server https://kubernetes.default.svc --dest-namespace holm
+
+{{- if .Values.createArgoApp | default false }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: lenovo-services
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/timholm/cmd-api.git
+    targetRevision: HEAD
+    path: lenovo-services
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+{{- end }}
