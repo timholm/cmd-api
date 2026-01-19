@@ -1,0 +1,9 @@
+{
+  "name": "cmd-api",
+  "version": "1.0.0",
+  "description": "Command API with Claude Code integration",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  }
+}

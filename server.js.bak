@@ -1,0 +1,113 @@
+const http = require('http');
+const { exec, spawn } = require('child_process');
+
+const PORT = process.env.PORT || 3000;
+
+const server = http.createServer((req, res) => {
+  // CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    res.writeHead(200);
+    res.end();
+    return;
+  }
+
+  // GET / - API info
+  if (req.method === 'GET' && req.url === '/') {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('Command API running.\nPOST to /run with {"cmd": "your command"}\nPOST to /claude with {"prompt": "your prompt"}');
+    return;
+  }
+
+  // POST /run - Execute shell command
+  if (req.method === 'POST' && req.url === '/run') {
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', () => {
+      try {
+        const { cmd } = JSON.parse(body);
+        exec(cmd, { timeout: 30000 }, (error, stdout, stderr) => {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({
+            stdout: stdout || '',
+            stderr: stderr || '',
+            code: error ? error.code || 1 : 0
+          }));
+        });
+      } catch (e) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Invalid JSON' }));
+      }
+    });
+    return;
+  }
+
+  // POST /claude - Send prompt to Claude Code
+  if (req.method === 'POST' && req.url === '/claude') {
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', () => {
+      try {
+        const { prompt } = JSON.parse(body);
+        if (!prompt) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Missing prompt' }));
+          return;
+        }
+
+        console.log(`[Claude] Received prompt: ${prompt.substring(0, 100)}...`);
+
+        // Run claude CLI with the prompt
+        const claude = spawn('claude', ['-p', prompt, '--no-input'], {
+          timeout: 300000, // 5 min timeout
+          env: { ...process.env, FORCE_COLOR: '0' }
+        });
+
+        let stdout = '';
+        let stderr = '';
+
+        claude.stdout.on('data', (data) => {
+          stdout += data.toString();
+        });
+
+        claude.stderr.on('data', (data) => {
+          stderr += data.toString();
+        });
+
+        claude.on('close', (code) => {
+          console.log(`[Claude] Completed with code ${code}`);
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({
+            response: stdout,
+            stderr: stderr,
+            code: code
+          }));
+        });
+
+        claude.on('error', (err) => {
+          console.error(`[Claude] Error: ${err.message}`);
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: err.message }));
+        });
+
+      } catch (e) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Invalid JSON' }));
+      }
+    });
+    return;
+  }
+
+  // 404 for other routes
+  res.writeHead(404, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ error: 'Not found' }));
+});
+
+server.listen(PORT, () => {
+  console.log(`Command API running on port ${PORT}`);
+  console.log(`POST /run - Execute shell commands`);
+  console.log(`POST /claude - Send prompts to Claude Code`);
+});
