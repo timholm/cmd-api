@@ -7,7 +7,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/timholm/cmd-api.git
-    targetRevision: HEAD
+    targetRevision: claude/cluster-logs-autodeploy-r3pb9
     path: lenovo-services
   destination:
     server: https://kubernetes.default.svc
