@@ -2,6 +2,7 @@ import http.server
 import json
 import subprocess
 import socketserver
+import paramiko
 
 PORT = 3000
 
@@ -21,7 +22,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header("Content-Type", "text/plain")
             self.end_headers()
-            self.wfile.write(b"Command API running.\nPOST /run - shell commands\nPOST /claude - Claude Code prompts")
+            self.wfile.write(b"Command API running.\nPOST /run - shell commands\nPOST /ssh - SSH remote commands\nPOST /claude - Claude Code prompts")
         else:
             self.send_response(404)
             self.end_headers()
@@ -56,6 +57,43 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(json.dumps(response).encode())
 
+        elif self.path == "/ssh":
+            host = data.get("host", "")
+            username = data.get("username", "")
+            password = data.get("password", "")
+            command = data.get("command", "")
+            port = data.get("port", 22)
+
+            if not all([host, username, password, command]):
+                self.send_response(400)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(b'{"error": "Missing host, username, password, or command"}')
+                return
+
+            print(f"[SSH] Connecting to {username}@{host}...")
+            try:
+                client = paramiko.SSHClient()
+                client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                client.connect(host, port=port, username=username, password=password, timeout=10)
+                stdin, stdout, stderr = client.exec_command(command, timeout=30)
+                response = {
+                    "stdout": stdout.read().decode(),
+                    "stderr": stderr.read().decode(),
+                    "code": stdout.channel.recv_exit_status()
+                }
+                client.close()
+                print(f"[SSH] Command completed with code {response['code']}")
+            except Exception as e:
+                print(f"[SSH] Error: {e}")
+                response = {"error": str(e)}
+
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(json.dumps(response).encode())
+
         elif self.path == "/claude":
             prompt = data.get("prompt", "")
             if not prompt:
@@ -64,7 +102,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(b'{"error": "Missing prompt"}')
                 return
-            
+
             print(f"[Claude] Received: {prompt[:100]}...")
             try:
                 result = subprocess.run(
@@ -82,7 +120,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
             except Exception as e:
                 print(f"[Claude] Error: {e}")
                 response = {"error": str(e)}
-            
+
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.end_headers()
