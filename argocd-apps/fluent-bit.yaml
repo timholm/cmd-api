@@ -17,12 +17,14 @@ spec:
         env:
           - name: MALLOC_ARENA_MAX
             value: "2"
+          - name: FLUENT_BIT_DISABLE_JEMALLOC
+            value: "1"
         resources:
           limits:
-            memory: 128Mi
+            memory: 256Mi
           requests:
             cpu: 50m
-            memory: 64Mi
+            memory: 128Mi
         tolerations:
           - key: node-role.kubernetes.io/master
             operator: Exists
@@ -64,7 +66,7 @@ spec:
                 Match kube.*
                 Host loki.monitoring.svc.cluster.local
                 Port 3100
-                Labels job=fluent-bit, namespace=$kubernetes['namespace_name'], pod=$kubernetes['pod_name'], container=$kubernetes['container_name'], node=$kubernetes['host']
+                Labels job=fluent-bit, namespace=$kubernetes['namespace_name'], pod=$kubernetes['pod_name'], container=$kubernetes['container_name'], node=$kubernetes['host'], stream=$stream
                 Auto_Kubernetes_Labels Off
   destination:
     server: https://kubernetes.default.svc
