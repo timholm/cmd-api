@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: trident
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://netapp.github.io/trident-helm-chart
+    chart: trident-operator
+    targetRevision: "*"
+    helm:
+      valuesObject:
+        operatorImage: netapp/trident-operator:25.10.0
+        tridentImage: netapp/trident:25.10.0
+        tridentAutosupportImage: netapp/trident-autosupport:25.10.0
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: trident
+  # Manual sync - observe only, don't auto-change
+  syncPolicy: {}

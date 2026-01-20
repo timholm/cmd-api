@@ -1,0 +1,124 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bookforge
+  namespace: default
+  labels:
+    app: bookforge
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bookforge
+  template:
+    metadata:
+      labels:
+        app: bookforge
+    spec:
+      containers:
+      - name: bookforge
+        image: ghcr.io/timholm/bookforge:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        env:
+        - name: POSTGRES_HOST
+          value: postgres
+        - name: POSTGRES_DB
+          value: bookforge
+        - name: POSTGRES_USER
+          value: bookforge
+        - name: POSTGRES_PASSWORD
+          value: bookforge123
+        - name: PORT
+          value: "8080"
+        envFrom:
+        - configMapRef:
+            name: bookforge-config
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: "1"
+            memory: 1Gi
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        volumeMounts:
+        - name: data
+          mountPath: /app/data
+        - name: audio
+          mountPath: /app/audio
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: bookforge-data
+      - name: audio
+        emptyDir: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bookforge-worker
+  namespace: default
+  labels:
+    app: bookforge-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bookforge-worker
+  template:
+    metadata:
+      labels:
+        app: bookforge-worker
+    spec:
+      containers:
+      - name: worker
+        image: ghcr.io/timholm/bookforge:latest
+        imagePullPolicy: Always
+        command: ["python", "queue_worker.py"]
+        env:
+        - name: POSTGRES_HOST
+          value: postgres
+        - name: POSTGRES_DB
+          value: bookforge
+        - name: POSTGRES_USER
+          value: bookforge
+        - name: POSTGRES_PASSWORD
+          value: bookforge123
+        envFrom:
+        - configMapRef:
+            name: bookforge-config
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: "2"
+            memory: 2Gi
+        volumeMounts:
+        - name: data
+          mountPath: /app/data
+        - name: audio
+          mountPath: /app/audio
+        - name: logs
+          mountPath: /app/logs
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: bookforge-data
+      - name: audio
+        emptyDir: {}
+      - name: logs
+        emptyDir: {}

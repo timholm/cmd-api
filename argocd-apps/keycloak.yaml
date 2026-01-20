@@ -1,0 +1,50 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: keycloak
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://codecentric.github.io/helm-charts
+    chart: keycloakx
+    targetRevision: "*"
+    helm:
+      valuesObject:
+        image:
+          repository: quay.io/keycloak/keycloak
+          tag: "26.0"
+        replicas: 1
+        command:
+          - "/opt/keycloak/bin/kc.sh"
+          - "start"
+          - "--http-enabled=true"
+          - "--proxy-headers=xforwarded"
+          - "--hostname=https://holm.chat/auth"
+          - "--hostname-backchannel-dynamic=true"
+        extraEnv: |
+          - name: KC_DB
+            value: postgres
+          - name: KC_DB_URL_HOST
+            value: keycloak-db
+          - name: KC_DB_USERNAME
+            value: keycloak
+          - name: KC_DB_PASSWORD
+            value: keycloak123
+          - name: KC_HEALTH_ENABLED
+            value: "true"
+          - name: KC_HTTP_RELATIVE_PATH
+            value: /auth
+          - name: KC_HOSTNAME_STRICT
+            value: "false"
+        dbchecker:
+          enabled: false
+        postgresql:
+          enabled: false
+        http:
+          relativePath: /auth
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: keycloak
+  # Manual sync - observe only, don't auto-change
+  syncPolicy: {}

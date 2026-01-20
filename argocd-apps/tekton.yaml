@@ -1,0 +1,41 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: tekton
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://tekton-releases.storage.googleapis.com/charts
+    chart: tekton-pipelines
+    targetRevision: "*"
+    helm:
+      valuesObject:
+        controller:
+          image:
+            repository: ghcr.io/tektoncd/pipeline/controller
+        webhook:
+          image:
+            repository: ghcr.io/tektoncd/pipeline/webhook
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: tekton-pipelines
+  # Manual sync - observe only, don't auto-change
+  syncPolicy: {}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: tekton-dashboard
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://tekton-releases.storage.googleapis.com/charts
+    chart: tekton-dashboard
+    targetRevision: "*"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: tekton-pipelines
+  # Manual sync - observe only, don't auto-change
+  syncPolicy: {}
