@@ -1,0 +1,70 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vector
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://helm.vector.dev
+    chart: vector
+    targetRevision: "*"
+    helm:
+      valuesObject:
+        role: Agent
+        resources:
+          limits:
+            memory: 128Mi
+          requests:
+            cpu: 50m
+            memory: 64Mi
+        tolerations:
+          - key: node-role.kubernetes.io/master
+            operator: Exists
+            effect: NoSchedule
+          - key: node-role.kubernetes.io/control-plane
+            operator: Exists
+            effect: NoSchedule
+        customConfig:
+          data_dir: /vector-data-dir
+          api:
+            enabled: true
+            address: 0.0.0.0:8686
+          sources:
+            kubernetes_logs:
+              type: kubernetes_logs
+              auto_partial_merge: true
+          transforms:
+            parse_logs:
+              type: remap
+              inputs:
+                - kubernetes_logs
+              source: |
+                .namespace = .kubernetes.pod_namespace
+                .pod = .kubernetes.pod_name
+                .container = .kubernetes.container_name
+                .node = .kubernetes.pod_node_name
+          sinks:
+            loki:
+              type: loki
+              inputs:
+                - parse_logs
+              endpoint: http://loki.monitoring:3100
+              encoding:
+                codec: json
+              labels:
+                job: vector
+                namespace: "{{ namespace }}"
+                pod: "{{ pod }}"
+                container: "{{ container }}"
+                node: "{{ node }}"
+              out_of_order_action: accept
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
