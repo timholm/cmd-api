@@ -47,102 +47,14 @@ spec:
                   path: /var/lib/grafana/dashboards/default
         dashboards:
           default:
-            cluster-logs:
-              json: |
-                {
-                  "annotations": {"list": []},
-                  "editable": true,
-                  "fiscalYearStartMonth": 0,
-                  "graphTooltip": 0,
-                  "id": null,
-                  "links": [],
-                  "panels": [
-                    {
-                      "datasource": {"type": "loki", "uid": "loki"},
-                      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}}, "overrides": []},
-                      "gridPos": {"h": 4, "w": 24, "x": 0, "y": 0},
-                      "id": 1,
-                      "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom"}, "tooltip": {"mode": "single"}},
-                      "targets": [{"datasource": {"type": "loki", "uid": "loki"}, "expr": "sum(count_over_time({job=\"fluent-bit\"} [1m])) by (namespace)", "legendFormat": "{{namespace}}", "refId": "A"}],
-                      "title": "Log Volume by Namespace",
-                      "type": "timeseries"
-                    },
-                    {
-                      "datasource": {"type": "loki", "uid": "loki"},
-                      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 100}, {"color": "red", "value": 1000}]}}, "overrides": []},
-                      "gridPos": {"h": 6, "w": 8, "x": 0, "y": 4},
-                      "id": 2,
-                      "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto"},
-                      "targets": [{"datasource": {"type": "loki", "uid": "loki"}, "expr": "sum(count_over_time({job=\"fluent-bit\"} |~ \"(?i)error\" [5m]))", "refId": "A"}],
-                      "title": "Errors (5m)",
-                      "type": "stat"
-                    },
-                    {
-                      "datasource": {"type": "loki", "uid": "loki"},
-                      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]}}, "overrides": []},
-                      "gridPos": {"h": 6, "w": 8, "x": 8, "y": 4},
-                      "id": 3,
-                      "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto"},
-                      "targets": [{"datasource": {"type": "loki", "uid": "loki"}, "expr": "sum(count_over_time({job=\"fluent-bit\"} [5m]))", "refId": "A"}],
-                      "title": "Total Logs (5m)",
-                      "type": "stat"
-                    },
-                    {
-                      "datasource": {"type": "loki", "uid": "loki"},
-                      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "orange", "value": null}]}}, "overrides": []},
-                      "gridPos": {"h": 6, "w": 8, "x": 16, "y": 4},
-                      "id": 4,
-                      "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto"},
-                      "targets": [{"datasource": {"type": "loki", "uid": "loki"}, "expr": "sum(count_over_time({job=\"fluent-bit\"} |~ \"(?i)warn\" [5m]))", "refId": "A"}],
-                      "title": "Warnings (5m)",
-                      "type": "stat"
-                    },
-                    {
-                      "datasource": {"type": "loki", "uid": "loki"},
-                      "gridPos": {"h": 12, "w": 24, "x": 0, "y": 10},
-                      "id": 5,
-                      "options": {"dedupStrategy": "none", "enableLogDetails": true, "prettifyLogMessage": false, "showCommonLabels": false, "showLabels": false, "showTime": true, "sortOrder": "Descending", "wrapLogMessage": false},
-                      "targets": [{"datasource": {"type": "loki", "uid": "loki"}, "expr": "{job=\"fluent-bit\", namespace=~\"$namespace\"} |~ \"$search\"", "refId": "A"}],
-                      "title": "Live Logs",
-                      "type": "logs"
-                    },
-                    {
-                      "datasource": {"type": "loki", "uid": "loki"},
-                      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}}, "overrides": []},
-                      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 22},
-                      "id": 6,
-                      "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom"}, "pieType": "pie", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "tooltip": {"mode": "single"}},
-                      "targets": [{"datasource": {"type": "loki", "uid": "loki"}, "expr": "sum(count_over_time({job=\"fluent-bit\"} [1h])) by (node)", "legendFormat": "{{node}}", "refId": "A"}],
-                      "title": "Logs by Node (1h)",
-                      "type": "piechart"
-                    },
-                    {
-                      "datasource": {"type": "loki", "uid": "loki"},
-                      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}}, "overrides": []},
-                      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 22},
-                      "id": 7,
-                      "options": {"legend": {"calcs": [], "displayMode": "list", "placement": "bottom"}, "pieType": "pie", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "tooltip": {"mode": "single"}},
-                      "targets": [{"datasource": {"type": "loki", "uid": "loki"}, "expr": "topk(10, sum(count_over_time({job=\"fluent-bit\"} [1h])) by (pod))", "legendFormat": "{{pod}}", "refId": "A"}],
-                      "title": "Top 10 Pods by Log Volume (1h)",
-                      "type": "piechart"
-                    }
-                  ],
-                  "refresh": "10s",
-                  "schemaVersion": 38,
-                  "tags": ["loki", "logs", "kubernetes"],
-                  "templating": {
-                    "list": [
-                      {"current": {"selected": true, "text": "All", "value": "$__all"}, "datasource": {"type": "loki", "uid": "loki"}, "definition": "label_values(namespace)", "hide": 0, "includeAll": true, "label": "Namespace", "multi": true, "name": "namespace", "options": [], "query": "label_values(namespace)", "refresh": 2, "regex": "", "skipUrlSync": false, "sort": 1, "type": "query"},
-                      {"current": {"selected": false, "text": "", "value": ""}, "hide": 0, "label": "Search", "name": "search", "options": [{"selected": true, "text": "", "value": ""}], "query": "", "skipUrlSync": false, "type": "textbox"}
-                    ]
-                  },
-                  "time": {"from": "now-1h", "to": "now"},
-                  "timepicker": {},
-                  "timezone": "",
-                  "title": "Kubernetes Cluster Logs",
-                  "uid": "cluster-logs",
-                  "version": 1
-                }
+            loki-logs:
+              gnetId: 13639
+              revision: 2
+              datasource: Loki
+            kubernetes-logs:
+              gnetId: 15141
+              revision: 1
+              datasource: Loki
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
