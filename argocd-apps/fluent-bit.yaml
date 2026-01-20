@@ -12,13 +12,8 @@ spec:
     helm:
       valuesObject:
         image:
-          repository: fluent/fluent-bit
-          tag: 3.2.2-debug
-        env:
-          - name: MALLOC_ARENA_MAX
-            value: "2"
-          - name: FLUENT_BIT_DISABLE_JEMALLOC
-            value: "1"
+          repository: public.ecr.aws/aws-observability/aws-for-fluent-bit
+          tag: stable
         resources:
           limits:
             memory: 256Mi
