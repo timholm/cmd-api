@@ -17,6 +17,14 @@ spec:
           snippets:
             pipelineStages:
               - cri: {}
+        extraArgs:
+          - -config.expand-env=true
+        containerSecurityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+          readOnlyRootFilesystem: true
         resources:
           limits:
             memory: 256Mi
