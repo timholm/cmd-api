@@ -30,7 +30,6 @@ spec:
                 isDefault: true
               - name: Loki
                 type: loki
-                uid: loki
                 url: http://loki.monitoring:3100
                 access: proxy
   destination:
