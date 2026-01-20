@@ -31,6 +31,17 @@ spec:
             retention_period: 168h
             reject_old_samples: true
             reject_old_samples_max_age: 168h
+            query_timeout: 5m
+            max_query_series: 5000
+            max_entries_limit_per_query: 10000
+            split_queries_by_interval: 15m
+          querier:
+            max_concurrent: 4
+          query_range:
+            parallelise_shardable_queries: false
+          server:
+            http_server_read_timeout: 5m
+            http_server_write_timeout: 5m
         singleBinary:
           replicas: 1
           persistence:
@@ -39,10 +50,10 @@ spec:
             storageClass: local-path
           resources:
             limits:
-              memory: 512Mi
+              memory: 1Gi
             requests:
-              cpu: 100m
-              memory: 256Mi
+              cpu: 200m
+              memory: 512Mi
         gateway:
           enabled: false
         read:
