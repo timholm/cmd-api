@@ -1,16 +1,17 @@
+{{- if .Values.serviceAccount.create }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: {{ .Chart.Name }}
+  name: {{ include "cmd-api.fullname" . }}
   labels:
-    app: {{ .Chart.Name }}
+    {{- include "cmd-api.labels" . | nindent 4 }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ .Chart.Name }}
+  name: {{ include "cmd-api.fullname" . }}
   labels:
-    app: {{ .Chart.Name }}
+    {{- include "cmd-api.labels" . | nindent 4 }}
 rules:
   - apiGroups: [""]
     resources: ["pods", "pods/log", "services", "configmaps", "secrets", "namespaces", "events", "endpoints"]
@@ -31,14 +32,15 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: {{ .Chart.Name }}
+  name: {{ include "cmd-api.fullname" . }}
   labels:
-    app: {{ .Chart.Name }}
+    {{- include "cmd-api.labels" . | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: {{ .Chart.Name }}
+  name: {{ include "cmd-api.fullname" . }}
 subjects:
   - kind: ServiceAccount
-    name: {{ .Chart.Name }}
+    name: {{ include "cmd-api.fullname" . }}
     namespace: {{ .Release.Namespace }}
+{{- end }}

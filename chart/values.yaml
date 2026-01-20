@@ -1,3 +1,5 @@
+# CMD API Helm Chart Values
+
 replicaCount: 1
 
 image:
@@ -9,6 +11,15 @@ service:
   type: ClusterIP
   port: 80
   targetPort: 3000
+
+# HTTPRoute for Gateway API ingress
+httpRoute:
+  enabled: true
+  hostname: "cmd.holm.chat"
+  path: "/"
+  gateway:
+    name: "main-gateway"
+    namespace: "envoy-gateway-system"
 
 resources:
   requests:
@@ -27,3 +38,8 @@ probes:
     path: /
     initialDelaySeconds: 5
     periodSeconds: 5
+
+# Service account settings
+serviceAccount:
+  create: true
+  name: ""

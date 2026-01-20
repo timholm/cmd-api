@@ -1,6 +1,14 @@
 apiVersion: v2
 name: cmd-api
-description: Lightweight HTTP API for shell commands and Claude Code prompts
+description: Lightweight HTTP API for shell commands, SSH, and Claude Code prompts
 type: application
-version: 0.1.0
+version: 1.0.0
 appVersion: "1.0.0"
+maintainers:
+  - name: timholm
+    url: https://github.com/timholm
+keywords:
+  - api
+  - ssh
+  - claude
+  - automation

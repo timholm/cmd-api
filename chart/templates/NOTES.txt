@@ -1,0 +1,30 @@
+CMD API has been deployed!
+
+{{- if .Values.httpRoute.enabled }}
+
+Access the API at:
+  https://{{ .Values.httpRoute.hostname }}{{ .Values.httpRoute.path }}
+
+{{- else }}
+
+To access the API, run:
+  kubectl port-forward svc/{{ include "cmd-api.fullname" . }} 8080:{{ .Values.service.port }} -n {{ .Release.Namespace }}
+
+Then open: http://localhost:8080
+
+{{- end }}
+
+API Endpoints:
+  GET  /       - Health check / info
+  POST /run    - Execute local shell command
+                 Body: {"cmd": "ls -la"}
+  POST /ssh    - Execute remote SSH command
+                 Body: {"host": "...", "username": "...", "password": "...", "command": "..."}
+  POST /claude - Send prompt to Claude Code
+                 Body: {"prompt": "..."}
+
+Test with:
+  curl https://{{ .Values.httpRoute.hostname }}/
+  curl -X POST https://{{ .Values.httpRoute.hostname }}/ssh \
+    -H "Content-Type: application/json" \
+    -d '{"host":"192.168.1.1","username":"user","password":"pass","command":"whoami"}'
