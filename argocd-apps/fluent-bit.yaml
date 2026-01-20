@@ -11,6 +11,12 @@ spec:
     targetRevision: "*"
     helm:
       valuesObject:
+        image:
+          repository: cr.fluentbit.io/fluent/fluent-bit
+          tag: 3.2.2
+        env:
+          - name: MALLOC_ARENA_MAX
+            value: "2"
         resources:
           limits:
             memory: 128Mi
