@@ -1,0 +1,59 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: immich
+  namespace: argocd
+  annotations:
+    argocd-image-updater.argoproj.io/image-list: server=ghcr.io/immich-app/immich-server,ml=ghcr.io/immich-app/immich-machine-learning
+    argocd-image-updater.argoproj.io/server.update-strategy: semver
+    argocd-image-updater.argoproj.io/ml.update-strategy: semver
+    argocd-image-updater.argoproj.io/server.helm.image-tag: server.controllers.main.containers.main.image.tag
+    argocd-image-updater.argoproj.io/ml.helm.image-tag: machine-learning.controllers.main.containers.main.image.tag
+    argocd-image-updater.argoproj.io/write-back-method: argocd
+    argocd-image-updater.argoproj.io/write-back-target: helmvalues
+spec:
+  project: default
+  source:
+    chart: immich
+    repoURL: https://immich-app.github.io/immich-charts
+    targetRevision: '*'
+    helm:
+      valuesObject:
+        env:
+          DB_DATABASE_NAME: immich
+          DB_HOSTNAME: immich-postgres
+          DB_PASSWORD: immich-password
+          DB_USERNAME: immich
+          REDIS_HOSTNAME: immich-redis-master
+        server:
+          controllers:
+            main:
+              containers:
+                main:
+                  image:
+                    tag: v2.4.1
+        machine-learning:
+          controllers:
+            main:
+              containers:
+                main:
+                  image:
+                    tag: v2.4.1
+          persistence:
+            cache:
+              enabled: true
+              type: persistentVolumeClaim
+              existingClaim: immich-ml-cache
+        immich:
+          persistence:
+            library:
+              existingClaim: immich-library-iscsi
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: immich
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

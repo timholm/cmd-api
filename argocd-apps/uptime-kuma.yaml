@@ -12,7 +12,7 @@ spec:
     helm:
       valuesObject:
         image:
-          tag: "1"
+          tag: "2"
         persistence:
           enabled: true
           size: 1Gi
@@ -23,6 +23,10 @@ spec:
           requests:
             cpu: 50m
             memory: 128Mi
+        tolerations:
+          - key: node.cilium.io/agent-not-ready
+            operator: Exists
+            effect: NoSchedule
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring

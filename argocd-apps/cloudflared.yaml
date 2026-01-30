@@ -1,0 +1,41 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cloudflared
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://cloudflare.github.io/helm-charts
+    chart: cloudflare-tunnel
+    targetRevision: "*"
+    helm:
+      valuesObject:
+        cloudflare:
+          tunnelName: k8s
+          tunnelId: 8fa14fa7-0c0f-4c5f-aa4b-02a53692538d
+          secretName: cloudflare-tunnel-credentials
+          account: 287d6126ed25707eeca1ee18d263d21b
+          ingress:
+            - hostname: uptime.holm.chat
+              service: http://uptime-kuma.monitoring.svc.cluster.local:3001
+            - hostname: cmd.holm.chat
+              service: http://cmd-api.default.svc.cluster.local:80
+            - hostname: holm.chat
+              service: http://envoy-envoy-gateway-system-main-gateway-c3508b54.envoy-gateway-system.svc.cluster.local:80
+            - hostname: www.holm.chat
+              service: http://envoy-envoy-gateway-system-main-gateway-c3508b54.envoy-gateway-system.svc.cluster.local:80
+            - hostname: dev.holm.chat
+              service: http://envoy-envoy-gateway-system-main-gateway-c3508b54.envoy-gateway-system.svc.cluster.local:80
+        replicaCount: 2
+        image:
+          tag: "2025.11.1"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cloudflare
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
