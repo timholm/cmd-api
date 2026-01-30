@@ -19,7 +19,7 @@ httpRoute:
   path: "/"
   gateway:
     name: "main-gateway"
-    namespace: "envoy-gateway-system"
+    namespace: "default"
 
 resources:
   requests:
