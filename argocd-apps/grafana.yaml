@@ -11,8 +11,10 @@ spec:
     targetRevision: "*"
     helm:
       valuesObject:
+        adminUser: tim
         adminPassword: holmgrafana
         env:
+          GF_SECURITY_ADMIN_USER: tim
           GF_SECURITY_ADMIN_PASSWORD: holmgrafana
         persistence:
           enabled: true
