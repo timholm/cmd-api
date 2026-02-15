@@ -21,6 +21,13 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - containerPort: {{ .Values.service.targetPort }}
+          env:
+            - name: CLAUDE_HOME
+              value: "/root"
+          volumeMounts:
+            - name: claude-credentials
+              mountPath: /root/.claude
+              readOnly: true
           {{- with .Values.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
@@ -37,3 +44,7 @@ spec:
               port: {{ .Values.service.targetPort }}
             initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
             periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
+      volumes:
+        - name: claude-credentials
+          secret:
+            secretName: claude-credentials

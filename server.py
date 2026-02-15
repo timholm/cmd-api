@@ -105,11 +105,18 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
             print(f"[Claude] Received: {prompt[:100]}...")
             try:
+                import os
+                claude_bin = os.environ.get("CLAUDE_BIN", "claude")
+                claude_home = os.environ.get("CLAUDE_HOME", "/root")
                 result = subprocess.run(
-                    ["/Users/tim/.local/bin/claude", "-p", prompt, "--print"],
+                    [claude_bin, "-p", prompt, "--print"],
                     capture_output=True,
                     timeout=300,
-                    env={"PATH": "/usr/bin:/bin:/usr/local/bin", "HOME": "/Users/tim"}
+                    env={
+                        "PATH": "/usr/bin:/bin:/usr/local/bin:/usr/lib/node_modules/.bin",
+                        "HOME": claude_home,
+                        "NODE_PATH": "/usr/lib/node_modules",
+                    }
                 )
                 response = {
                     "response": result.stdout.decode(),

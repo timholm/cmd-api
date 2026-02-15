@@ -1,8 +1,11 @@
 FROM python:3.11-slim
 
-RUN apt-get update && apt-get install -y curl openssh-client && \
+RUN apt-get update && apt-get install -y curl openssh-client gnupg && \
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs && \
     curl -LO "https://dl.k8s.io/release/v1.32.1/bin/linux/$(dpkg --print-architecture)/kubectl" && \
     chmod +x kubectl && mv kubectl /usr/local/bin/ && \
+    npm install -g @anthropic-ai/claude-code && \
     pip install --no-cache-dir paramiko && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
