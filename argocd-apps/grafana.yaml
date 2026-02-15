@@ -17,15 +17,17 @@ spec:
           storageClassName: local-path
         grafana.ini:
           server:
-            root_url: https://holm.chat/grafana
-            serve_from_sub_path: true
+            domain: grafana.holm.chat
+            root_url: https://grafana.holm.chat
+          auth.anonymous:
+            enabled: false
         datasources:
           datasources.yaml:
             apiVersion: 1
             datasources:
               - name: Prometheus
                 type: prometheus
-                url: http://prometheus-server.monitoring:80
+                url: http://kube-prometheus-stack-prometheus.monitoring:9090
                 access: proxy
                 isDefault: true
               - name: Loki

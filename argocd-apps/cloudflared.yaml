@@ -29,6 +29,8 @@ spec:
               service: http://envoy-envoy-gateway-system-main-gateway-c3508b54.envoy-gateway-system.svc.cluster.local:80
             - hostname: mind.holm.chat
               service: http://envoy-envoy-gateway-system-main-gateway-c3508b54.envoy-gateway-system.svc.cluster.local:80
+            - hostname: grafana.holm.chat
+              service: http://grafana.monitoring.svc.cluster.local:80
         replicaCount: 2
         image:
           tag: "2025.11.1"
