@@ -11,6 +11,7 @@ spec:
     targetRevision: "*"
     helm:
       valuesObject:
+        adminPassword: holmgrafana
         persistence:
           enabled: true
           size: 5Gi
