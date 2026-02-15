@@ -12,6 +12,8 @@ spec:
     helm:
       valuesObject:
         adminPassword: holmgrafana
+        env:
+          GF_SECURITY_ADMIN_PASSWORD: holmgrafana
         persistence:
           enabled: true
           size: 5Gi
